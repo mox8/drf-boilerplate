@@ -30,6 +30,8 @@ RUN set -ex \
 COPY service ${APP_DIR}
 COPY ./local.entrypoint.sh ${APP_DIR}
 RUN chmod a+x ${APP_DIR}local.entrypoint.sh && \
+    mkdir -p ${APP_DIR}backend-static && \
+    mkdir -p ${APP_DIR}media && \
     chown ${APP_USER}:${APP_USER} ${APP_DIR}backend-static && \
     chown ${APP_USER}:${APP_USER} ${APP_DIR}media
 
