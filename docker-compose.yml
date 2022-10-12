@@ -42,6 +42,15 @@ services:
       - "8080:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+  nginx:
+    image: nginx:1.17
+    restart: unless-stopped
+    build:
+      context: ./services/nginx/
+    ports:
+      - "80:80"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
 
 volumes:
   postgres_data:

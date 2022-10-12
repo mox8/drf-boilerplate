@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import include, path
 from django.conf.urls.static import static
 
-from apps.admin.admins import admin_site
+from apps.admin.site import admin_site
 
 from .v1.urls import urlpatterns as v1_urls
 from .health_check import urlpatterns as health_check_urls
