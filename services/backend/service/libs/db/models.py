@@ -1,4 +1,5 @@
 import uuid
+from django.utils import timezone
 
 from django.db import models
 
@@ -10,10 +11,14 @@ class BaseModel(models.Model):
         editable=False,
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        self.updated_at = timezone.now()
+        return super().save(*args, **kwargs)
 
 
 class BaseDiscordModel(models.Model):
