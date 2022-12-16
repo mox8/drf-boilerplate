@@ -1,3 +1,4 @@
+import os
 import xml.etree.cElementTree as et
 
 
@@ -23,3 +24,10 @@ def is_svg(file):
         pass
     file.seek(0)
     return tag == '{http://www.w3.org/2000/svg}svg'
+
+
+def get_env_variables_list(env_name: str) -> list:
+    env_string = os.environ.get(env_name, '')
+    env_string = env_string.replace(' ', '')
+    env_list = list(set(list(filter(None, env_string.split(',')))))
+    return env_list
