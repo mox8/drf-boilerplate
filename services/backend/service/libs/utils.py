@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+
 import xml.etree.cElementTree as et
 
 
@@ -31,3 +33,12 @@ def get_env_variables_list(env_name: str) -> list:
     env_string = env_string.replace(' ', '')
     env_list = list(set(list(filter(None, env_string.split(',')))))
     return env_list
+
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start = datetime.now()
+        result = func(*args, **kwargs)
+        print(f'RUNTIME {func.__name__}: {datetime.now() - start}')
+        return result
+    return wrapper
