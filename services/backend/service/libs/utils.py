@@ -35,10 +35,26 @@ def get_env_variables_list(env_name: str) -> list:
     return env_list
 
 
+class StrColors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    ENDC = '\033[0m'
+
+
 def timeit(func):
     def wrapper(*args, **kwargs):
+        color_pattern = f'{StrColors.OKGREEN}{StrColors.BOLD} [{func.__name__}] -> '
         start = datetime.now()
+        print(f'{color_pattern}Start time: {start.strftime("%H:%M:%S")}{StrColors.ENDC}\n')
         result = func(*args, **kwargs)
-        print(f'RUNTIME {func.__name__}: {datetime.now() - start}')
+        finish = datetime.now()
+        print(f'\n{color_pattern}Finish time: {finish.strftime("%H:%M:%S")}{StrColors.ENDC}')
+        print(f'{color_pattern}Duration: {finish - start}{StrColors.ENDC}')
         return result
     return wrapper
