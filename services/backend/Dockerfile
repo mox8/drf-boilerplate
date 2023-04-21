@@ -39,4 +39,4 @@ RUN chmod a+x ${APP_DIR}local.entrypoint.sh && \
 WORKDIR ${APP_DIR}
 EXPOSE 8000
 
-ENTRYPOINT ["sh", "local.entrypoint.sh"]
+CMD ["sh", "./local.entrypoint.sh"]

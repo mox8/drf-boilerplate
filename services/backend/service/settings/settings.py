@@ -210,9 +210,7 @@ CELERY_QUEUES = [
 ]
 
 CELERY_IMPORTS = (
-    'apps.stats.discord.tasks',
-    'apps.stats.twitter.tasks',
-    'apps.stats.chain.tasks',
+    # 'apps.app.tasks',
 )
 
 CELERY_TASK_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE_NAME
