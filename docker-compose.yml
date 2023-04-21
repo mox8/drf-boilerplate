@@ -16,7 +16,7 @@ services:
       - ./services/backend/service/settings:/home/appuser/project/settings/
     env_file:
       - ./services/backend/.env
-    command: ./services/backend/local.entrypoint.sh
+    command: ['sh', '/home/appuser/project/local.entrypoint.sh']
     ports:
       - '8000:8000'
     depends_on:
@@ -30,26 +30,77 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  pgadmin:
-    container_name: pgadmin4_container
-    image: dpage/pgadmin4:5.5
+#  pgadmin:
+#    container_name: pgadmin4_container
+#    image: dpage/pgadmin4:5.5
+#    restart: always
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@admin.admin
+#      PGADMIN_DEFAULT_PASSWORD: secret
+#      PGADMIN_LISTEN_PORT: 80
+#    ports:
+#      - "8080:80"
+#    volumes:
+#      - pgadmin-data:/var/lib/pgadmin
+#
+#  nginx:
+#    image: nginx:1.17
+#    restart: unless-stopped
+#    build:
+#      context: ./services/nginx/
+#    ports:
+#      - "80:80"
+#    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  redis:
+    image: redis
     restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.admin
-      PGADMIN_DEFAULT_PASSWORD: secret
-      PGADMIN_LISTEN_PORT: 80
-    ports:
-      - "8080:80"
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-  nginx:
-    image: nginx:1.17
-    restart: unless-stopped
+    container_name: redis
+
+  worker-default:
+    restart: always
     build:
-      context: ./services/nginx/
+      context: ./services/backend/
+      dockerfile: Dockerfile
+    container_name: worker-default
+    env_file:
+      - ./services/backend/.env
+    command: [ 'celery', '--workdir=/home/appuser/project', '-A', 'settings', 'worker', '--pool=prefork', '--concurrency=1', '-l', 'INFO', '-Q', 'default', '-n', 'worker-default']
+    depends_on:
+      - app
+      - pgdb
+
+  beat:
+    restart: always
+    build:
+      context: ./services/backend/
+      dockerfile: Dockerfile
+    container_name: beat
+    env_file:
+      - ./services/backend/.env
+    command: [ 'celery', '-A', 'settings', 'beat']
+    depends_on:
+      - app
+      - pgdb
+
+  flower:
+    image: mher/flower
+    restart: always
     ports:
-      - "80:80"
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+      - "5555:5555"
+    container_name: flower
+    command:
+      [
+        "celery",
+        "--broker=redis://redis:6379",
+        "flower",
+        "--broker_api=redis://redis:6379",
+        "--address=0.0.0.0",
+        "--port=5555",
+      ]
+    depends_on:
+      - app
+      - pgdb
 
 
 volumes:

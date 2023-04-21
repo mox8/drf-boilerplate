@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
+from kombu import Queue, Exchange
+from datetime import timedelta
+
 from libs.utils import get_env_variables_list
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -42,6 +46,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'storages',
     'drf_yasg',
+    'nested_admin',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -76,11 +83,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'settings.wsgi.application'
 
 REST_FRAMEWORK = {
+    'COERCE_DECIMAL_TO_STRING': False,
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 30,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     )
@@ -120,16 +127,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+DJANGO_SUPERUSER_LOGIN = os.environ.get('DJANGO_SUPERUSER_LOGIN', 'admin')
+DJANGO_SUPERUSER_EMAIL = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@admin.com')
+DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin')
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -185,3 +193,42 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'PERSIST_AUTH': True,
 }
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379')
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = int(os.environ.get('CELERY_TASK_TIME_LIMIT_MIN', 5)) * 60
+
+CELERY_DEFAULT_QUEUE_NAME = 'default'
+
+CELERY_QUEUES = [
+    Queue(
+        CELERY_DEFAULT_QUEUE_NAME,
+        Exchange(CELERY_DEFAULT_QUEUE_NAME),
+        routing_key=CELERY_DEFAULT_QUEUE_NAME,
+    ),
+]
+
+CELERY_IMPORTS = (
+    # 'apps.app.tasks',
+)
+
+CELERY_TASK_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE_NAME
+
+CELERY_ROUTES = dict()
+CELERY_BEAT_SCHEDULE = dict()
+
+
+# scheduled tasks
+# create boolean SWITCHER_ENV to enable/disable tasks
+# create int SCHEDULE_ENV to define schedule for task in seconds
+if bool(int(os.environ.get('SWITCHER_ENV', '0'))):
+    CELERY_BEAT_SCHEDULE.update({
+        'twitter-update-followers-stats': {
+            'task': 'apps.stats.twitter.tasks.count_followers_stats',
+            'schedule': timedelta(seconds=int(os.environ.get('SCHEDULE_ENV', 60))),
+            'options': {
+                'queue': CELERY_TASK_DEFAULT_QUEUE,
+            },
+        }
+    })
