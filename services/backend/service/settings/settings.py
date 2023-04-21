@@ -120,6 +120,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+DJANGO_SUPERUSER_LOGIN = os.environ.get('DJANGO_SUPERUSER_LOGIN', 'admin')
+DJANGO_SUPERUSER_EMAIL = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@admin.com')
+DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin')
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
