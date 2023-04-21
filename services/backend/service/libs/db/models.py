@@ -4,6 +4,13 @@ from django.utils import timezone
 from django.db import models
 
 
+# Short "null=True, blank=True" snippet
+NB = {
+    'null': True,
+    'blank': True,
+}
+
+
 class BaseModel(models.Model):
     uuid = models.UUIDField(
         primary_key=True,
