@@ -25,8 +25,12 @@ services:
   pgdb:
     image: postgres:13.3-alpine
     container_name: postgres
-    env_file:
-      - ./services/postgres/.env
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      DB_HOST: pgdb
+      DB_PORT: 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
