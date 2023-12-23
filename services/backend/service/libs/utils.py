@@ -1,5 +1,7 @@
 import os
 from datetime import datetime
+import string
+import random
 
 import xml.etree.cElementTree as et
 
@@ -13,6 +15,12 @@ def get_n_items_from_iterable(dataset: list, amount: int) -> list:
     index_list = list(range(0, dataset.index(dataset[-1]), step))
     index_list.append(dataset.index(dataset[-1]))
     return list(map(lambda x: dataset[x], index_list))
+
+
+def generate_random_string(length) -> str:
+    return "".join(
+        [random.choice(string.ascii_uppercase + string.ascii_uppercase + string.digits) for _ in range(length)]
+    )
 
 
 def is_svg(file):

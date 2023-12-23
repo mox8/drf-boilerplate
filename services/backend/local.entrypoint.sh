@@ -13,6 +13,8 @@ fi
 
 python manage.py migrate --no-input
 python manage.py collectstatic --no-input
-python manage.py createsuperuser --username $DJANGO_SUPERUSER_LOGIN --email $DJANGO_SUPERUSER_EMAIL --noinput
+
+# setup commands
+python manage.py create_default_super_user
 
 python manage.py runserver 0.0.0.0:8000

@@ -9,6 +9,7 @@ from .health_check import urlpatterns as health_check_urls
 
 
 urlpatterns = [
+    path("__debug__/", include("debug_toolbar.urls")),
     path('admin/', admin_site.urls),
     path('api/', include([
         path('v1/', include(v1_urls)),

@@ -15,6 +15,12 @@ django-celery-results==2.4.0
 djangorestframework-api-key==2.2.0
 django-nested-admin==3.4.0
 pandas==1.5.2
+Faker==19.13.0
+django-debug-toolbar==4.2.0
 
 # Docs
 drf-yasg==1.20.0
+
+# Sentry
+sentry-sdk==1.37.1
+sentry-sdk [django] == 1.37.1

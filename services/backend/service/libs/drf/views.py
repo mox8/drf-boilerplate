@@ -1,6 +1,16 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 
+from libs.drf.serializers import ObjectsCountsSerializer
+
+
+class ObjectsCountsApiView(generics.ListAPIView):
+    pagination_class = None
+    serializer_class = ObjectsCountsSerializer
+
+    def get_queryset(self):
+        raise NotImplementedError
+
 
 class PostWithSimpleResponseAPIView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):

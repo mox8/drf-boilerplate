@@ -1,16 +1,27 @@
 import os
+import logging
 from pathlib import Path
-
-from celery.schedules import crontab
-from kombu import Queue, Exchange
 from datetime import timedelta
 
+from kombu import Queue, Exchange
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
+
 from libs.utils import get_env_variables_list
+
+
+# Environments
+ENVIRONMENT_PRODUCTION = 'production'
+ENVIRONMENT_DEVELOPMENT = 'dev'
+ENVIRONMENT_LOCAL = 'local'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 PROJECT_NAME = os.environ.get('PROJECT_NAME', 'Boilerplate')
+ENVIRONMENT = os.environ.get('ENVIRONMENT', ENVIRONMENT_DEVELOPMENT)
+RELEASE = os.environ.get('RELEASE', '0.1')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -20,6 +31,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
+
+if ENVIRONMENT == ENVIRONMENT_PRODUCTION:
+    DEBUG = False
 
 ALLOWED_HOSTS = get_env_variables_list(env_name='ALLOWED_HOSTS')
 CORS_ALLOW_METHODS = get_env_variables_list(env_name='CORS_ALLOW_METHODS')
@@ -42,6 +56,7 @@ INSTALLED_APPS = [
     'apps',
 
     # Third party apps
+    'debug_toolbar',
     'corsheaders',
     'rest_framework',
     'storages',
@@ -51,10 +66,17 @@ INSTALLED_APPS = [
     'django_celery_results',
 ]
 
+
+if DEBUG:
+    import socket  # only if you haven't already imported this
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -193,6 +215,58 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'PERSIST_AUTH': True,
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime} {levelname} {pathname}.{funcName}:{lineno}] {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "[{asctime} {levelname} {funcName}:{lineno}] {message}",
+            "style": "{",
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            "formatter": "verbose",
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
+
+SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
+SENTRY_ENVIRONMENT = ENVIRONMENT
+SENTRY_RELEASE = RELEASE
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    environment=SENTRY_ENVIRONMENT,
+    release=SENTRY_RELEASE,
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+    integrations=[
+        DjangoIntegration(
+            transaction_style='url',
+            middleware_spans=True,
+            signals_spans=False,
+            cache_spans=False,
+        ),
+        LoggingIntegration(
+            level=logging.INFO,
+            event_level=logging.WARNING,
+        ),
+    ]
+)
+
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379')
