@@ -1,4 +1,4 @@
-FROM python:3.9.7
+FROM python:3.12.1
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -20,7 +20,7 @@ RUN set -ex \
     postgresql-client \
     python3-dev \
     musl-dev \
-    netcat \
+    netcat-traditional \
     " \
     && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS && \
     pip install --upgrade pip && \

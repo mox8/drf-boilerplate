@@ -3,7 +3,6 @@
 > Repository uses Mono-app approach
 
 ## Included:
-
 - Docker configuration
   - `Dockerfile`
   - `docker-compose.yml`
@@ -23,9 +22,13 @@
 - Miscellaneous
   - `.gitignore`
   - `create_default_superuser.py`
+  - django debug toolbar
+  - CORS
+  - ipython shell
 
 
 ## Usage
 
 - uncomment `.env` in `.gitignore`
+- uncomment `sandbox` in `.gitignore`
 - You're good to go

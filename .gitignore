@@ -16,3 +16,6 @@ db.sqlite3
 
 # mac os
 *.DS_Store
+
+# sandbox
+sandbox/
