@@ -16,7 +16,7 @@ urlpatterns = [
     path('api/', include([
         path('v1/', include(v1_urls)),
         path('internal/', include(internal_urls)),
-        path('health_check/', include(health_check_urls)),
+        path('health-check/', include(health_check_urls)),
         path('docs/', include(docs_urlpatterns)),
     ]))
 ] + (
